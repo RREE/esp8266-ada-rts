@@ -1,0 +1,82 @@
+#!/bin/sh
+
+#--------------------------------------------------------------------------
+#- The xtensa-lx106-elf-Ada Library is free software;  you can redistribute it and/or --
+#- modify it under terms of the  GNU General Public License as published --
+#- by  the  Free Software  Foundation;  either  version 2, or  (at  your --
+#- option) any later version.  The xtensa-lx106-elf-Ada Library is distributed in the --
+#- hope that it will be useful, but  WITHOUT ANY WARRANTY;  without even --
+#- the  implied warranty of MERCHANTABILITY or FITNESS FOR A  PARTICULAR --
+#- PURPOSE. See the GNU General Public License for more details.         --
+#-                                                                       --
+#--------------------------------------------------------------------------
+
+####################################################################
+
+echo -n "checking xtensa-lx106-elf-gcc ... "
+xtensa-lx106-elf-gcc -v > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "No\n Make sure that xtensa-lx106-elf-gcc is in your PATH."  
+    exit
+fi
+echo "OK"
+
+echo -n "checking xtensa-lx106-elf-gcc version ... "
+version=`xtensa-lx106-elf-gcc -dumpversion`
+major=`echo $version | awk -F. ' { print $1; } '`
+minor=`echo $version | awk -F. ' { print $2; } '`
+patch=`echo $version | awk -F. ' { print $3; } '`
+VERSION_REQ="($version)\n **** too old ****\n xtensa-lx106-elf-Ada requires gcc-5 or newer"
+
+if [ $major -lt 5 ] ; then
+    echo "$VERSION_REQ"
+    exit 2
+#elif [ $major -eq 4 ]; then
+#    if [ $minor -lt 7 ] ; then
+#        echo -e "$VERSION_REQ"
+#        exit 2
+#    fi
+fi
+echo "($version)"
+
+
+####################################################################
+echo -n "checking xtensa-lx106-elf-gcc installation directory ... "
+LIBGCC=`xtensa-lx106-elf-gcc -print-libgcc-file-name`
+RTS_BASE=`dirname $LIBGCC`
+PREFIX=`echo $RTS_BASE | sed 's:/[^/]*/[^/]*/[^/]*/[^/]*$::'`
+echo "($PREFIX)"
+
+
+####################################################################
+RTS_DIST=`${PWDCMD-pwd}`/gcc/$major.$minor
+RTS_DIST=`echo $RTS_DIST | sed -e 's!^/cygdrive!!'`
+RTS_DIST=`echo $RTS_DIST | sed -e 's!^/\([a-z]\)/!\1:/!'`
+
+
+####################################################################
+#echo
+#echo "       Summary"
+#echo "       ======="
+#echo
+#echo "xtensa-lx106-elf Ada compiler version = $version"
+#echo
+#echo "The xtensa-lx106-elf-Ada run/compile-time system (RTS) will be installed in"
+#echo "   $RTS_BASE/adainclude"
+#echo "   $RTS_BASE/adalib"
+#echo
+
+
+####################################################################
+#
+# write results in config file
+#
+echo "# this file is generated automatically by xtensa-lx106-elf-Ada configure" > config
+echo "#      ! do not edit !"                                     >> config
+echo "VER=$version"                                               >> config
+echo "major=$major"                                               >> config
+echo "minor=$minor"                                               >> config
+echo "patch=$patch"                                               >> config
+echo "RTS_BASE=$RTS_BASE"                                         >> config
+echo "PREFIX=$PREFIX"                                             >> config
+

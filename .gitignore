@@ -1,5 +1,14 @@
+config
+Makefile.devel.post
+rts
+
+# backups
+*~
+*.bak
+
 # Object file
 *.o
+*.a
 
 # Ada Library Information
 *.ali
